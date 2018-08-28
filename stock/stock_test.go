@@ -15,6 +15,9 @@ func dumpData(data interface{}) {
 			case reflect.Float64:
 				fmt.Println(t.Field(i).Name,  f.Float())
 				break
+			case reflect.Int64:
+				fmt.Println(t.Field(i).Name,  f.Int())
+				break
 		}
 	}
 }
@@ -25,6 +28,7 @@ func ExampleBuilder() {
 	fmt.Println(stock.Id)
 	fmt.Println(stock.Name)
 	//dumpData(stock.Computed)
+	//dumpData(stock.Finance)
 	//output:
 	//00700
 	//腾讯控股

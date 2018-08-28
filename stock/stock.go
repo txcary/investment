@@ -1,7 +1,14 @@
 package stock
 
 import (
-//  "goplatform/model"
+	"time"
+)
+
+var (
+	dayNanoseconds int64 = int64(24 * time.Hour) 
+	monthNanoseconds int64 = 30 * dayNanoseconds  
+	financeExireNanoseconds int64 = monthNanoseconds
+	marketExireNanoseconds int64 = dayNanoseconds
 )
 
 type Finance struct {
@@ -17,6 +24,8 @@ type Finance struct {
 	ProfitDividendRateList    []float64
 	CurrentAssetList          []float64
 	CurrentLiabilitiesList    []float64
+
+	FinanceUpdatedTime int64
 }
 
 type Market struct {
@@ -24,6 +33,8 @@ type Market struct {
 	Pb           float64
 	Pe           float64
 	DividendRate float64
+
+	MarketUpdatedTime int64
 }
 
 type Info struct {
@@ -53,6 +64,14 @@ type Stock struct {
 	Computed
 }
 
+func (obj *Stock) isExpired(base int64, expireDuration int64) (expired bool) {
+	nowNano := time.Now().UnixNano()	
+	if nowNano > base + expireDuration {
+		return true
+	}
+	return false
+}
+
 func (obj *Stock) SetInfo(info Info) {
 	obj.Info = info
 }
@@ -60,11 +79,21 @@ func (obj *Stock) SetInfo(info Info) {
 func (obj *Stock) SetMarket(marketInfo Market) {
 	obj.Market = marketInfo
 	obj.computeMarket()
+	obj.MarketUpdatedTime = time.Now().UnixNano()
 }
 
 func (obj *Stock) SetFinance(financeInfo Finance) {
 	obj.Finance = financeInfo
 	obj.computeFinance()
+	obj.FinanceUpdatedTime = time.Now().UnixNano()
+}
+
+func (obj *Stock) IsFinanceExpired() bool {
+	return obj.isExpired(obj.FinanceUpdatedTime, financeExireNanoseconds)
+}
+
+func (obj *Stock) IsMarketExpired() bool {
+	return obj.isExpired(obj.MarketUpdatedTime, marketExireNanoseconds)
 }
 
 func (obj *Stock) Init(stockInfo Info, marketInfo Market, financeInfo Finance) {

@@ -2,12 +2,15 @@ package stock
 
 import (
 	"sync"
+	"github.com/txcary/investment/db"
 	"github.com/txcary/lixinger"
 	"github.com/txcary/investment/config"
+	"github.com/txcary/investment/common/utils"
 )
 
 type Builder struct {
-	stockMap sync.Map//map[string]*Stock
+	stockMap sync.Map
+	stockDb *db.Db
 	lixingerObj *lixinger.Lixinger
 }
 
@@ -50,12 +53,35 @@ func (obj *Builder) getFinance(id string) (res Finance, err error) {
 	return
 }
 
-func (obj *Builder) newStock(id string) *Stock {
+func (obj *Builder) newStockFromCatch(id string) *Stock {
 	info, _ := obj.getInfo(id)
 	market, _ := obj.getMarket(id)
 	finance, _ := obj.getFinance(id)
-	stockObj := New(info, market, finance)
-	return stockObj
+	stockobj := New(info, market, finance)
+	return stockobj
+}
+
+func (obj *Builder) newStockFromDb(id string) *Stock {
+	stockobj := new(Stock) 
+	err := obj.stockDb.Get(id, stockobj)
+	if err == nil {
+		return stockobj
+	}
+	return nil
+}
+
+func (obj *Builder) newStock(id string) *Stock {
+	var stockobj *Stock
+	stockobj = obj.newStockFromDb(id)
+	if stockobj == nil {
+		stockobj = obj.newStockFromCatch(id)
+		obj.putDb(id, stockobj)
+	}
+	return stockobj
+}
+
+func (obj *Builder) putDb(id string, stockobj *Stock) {
+	obj.stockDb.Put(id, stockobj)
 }
 
 func (obj *Builder) Build(id string) *Stock {
@@ -64,7 +90,23 @@ func (obj *Builder) Build(id string) *Stock {
 	if v, ok = obj.stockMap.Load(id); !ok {
 		v, ok = obj.stockMap.LoadOrStore(id, obj.newStock(id))
 	}
-	return v.(*Stock)
+	
+	stockobj := v.(*Stock)
+	updated := false
+	if stockobj.IsFinanceExpired() {
+		finance, _ := obj.getFinance(id)
+		stockobj.SetFinance(finance)
+		updated = true
+	}
+	if stockobj.IsMarketExpired() {
+		market, _ := obj.getMarket(id)
+		stockobj.SetMarket(market)
+		updated = true
+	}
+	if updated {
+		obj.putDb(id, stockobj)
+	}
+	return stockobj
 }
 
 func BuilderInstance() *Builder {
@@ -73,6 +115,9 @@ func BuilderInstance() *Builder {
 
 		obj = new(Builder)
 		obj.lixingerObj = lixinger.New(token)
+
+		dbfile := config.Instance().GetString("stock", "db")
+		obj.stockDb = db.New(utils.Gopath()+utils.Slash()+"db"+utils.Slash()+dbfile)
 	}
 
 	return obj
