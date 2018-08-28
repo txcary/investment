@@ -1,12 +1,13 @@
 package stock 
 
 import (
+	"sync"
 	"github.com/txcary/lixinger"
 	"github.com/txcary/investment/config"
 )
 
 type Builder struct {
-	stockMap map[string]*Stock
+	stockMap sync.Map//map[string]*Stock
 	lixingerObj *lixinger.Lixinger
 }
 
@@ -58,10 +59,12 @@ func (obj *Builder) newStock(id string) *Stock {
 }
 
 func (obj *Builder) Build(id string) *Stock {
-	if _,ok := obj.stockMap[id]; !ok {
-		obj.stockMap[id] = obj.newStock(id)
+	var v interface{}
+	var ok bool
+	if v, ok = obj.stockMap.Load(id); !ok {
+		v, ok = obj.stockMap.LoadOrStore(id, obj.newStock(id))
 	}
-	return obj.stockMap[id]	
+	return v.(*Stock)
 }
 
 func BuilderInstance() *Builder {
@@ -70,7 +73,6 @@ func BuilderInstance() *Builder {
 
 		obj = new(Builder)
 		obj.lixingerObj = lixinger.New(token)
-		obj.stockMap = make(map[string]*Stock)
 	}
 
 	return obj
