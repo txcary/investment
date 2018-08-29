@@ -5,7 +5,7 @@ import (
 	"github.com/txcary/investment/db"
 	"github.com/txcary/lixinger"
 	"github.com/txcary/investment/config"
-	"github.com/txcary/investment/common/utils"
+	"github.com/txcary/investment/utils"
 )
 
 type Builder struct {
@@ -84,15 +84,14 @@ func (obj *Builder) putDb(id string, stockobj *Stock) {
 	obj.stockDb.Put(id, stockobj)
 }
 
-func (obj *Builder) Build(id string) *Stock {
+func (obj *Builder) UpdateIfExpired(id string) (updated bool) {
 	var v interface{}
 	var ok bool
+	updated = false
 	if v, ok = obj.stockMap.Load(id); !ok {
-		v, ok = obj.stockMap.LoadOrStore(id, obj.newStock(id))
+		return
 	}
-	
 	stockobj := v.(*Stock)
-	updated := false
 	if stockobj.IsFinanceExpired() {
 		finance, _ := obj.getFinance(id)
 		stockobj.SetFinance(finance)
@@ -106,6 +105,17 @@ func (obj *Builder) Build(id string) *Stock {
 	if updated {
 		obj.putDb(id, stockobj)
 	}
+	return
+}
+
+func (obj *Builder) Build(id string) *Stock {
+	var v interface{}
+	var ok bool
+	if v, ok = obj.stockMap.Load(id); !ok {
+		v, ok = obj.stockMap.LoadOrStore(id, obj.newStock(id))
+	}
+	stockobj := v.(*Stock)
+	obj.UpdateIfExpired(id)
 	return stockobj
 }
 

@@ -6,9 +6,10 @@ import (
 
 var (
 	dayNanoseconds int64 = int64(24 * time.Hour) 
+	weekNanoseconds int64 = 7 * dayNanoseconds  
 	monthNanoseconds int64 = 30 * dayNanoseconds  
-	financeExireNanoseconds int64 = monthNanoseconds
-	marketExireNanoseconds int64 = dayNanoseconds
+	financeExireNanoseconds int64 = weekNanoseconds
+	marketExireNanoseconds int64 = int64(12 * time.Hour)
 )
 
 type Finance struct {

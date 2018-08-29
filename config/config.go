@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/go-ini/ini"
-	"github.com/txcary/investment/common/utils"
+	"github.com/txcary/investment/utils"
 )
 
 const (

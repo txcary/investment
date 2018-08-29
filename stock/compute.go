@@ -1,7 +1,7 @@
 package stock
 
 import (
-	"github.com/txcary/investment/common/utils"
+	"github.com/txcary/investment/utils"
 )
 
 const (
