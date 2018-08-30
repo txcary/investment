@@ -19,6 +19,7 @@ var serverObj *Server
 func (obj *Server) Init() {
 	obj.router = mux.NewRouter().StrictSlash(true)
 	obj.InitStock()
+	obj.InitRoot()
 }
 
 func StartServer() {

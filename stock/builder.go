@@ -2,6 +2,7 @@ package stock
 
 import (
 	"sync"
+	"fmt"
 	"github.com/txcary/investment/db"
 	"github.com/txcary/lixinger"
 	"github.com/txcary/investment/config"
@@ -57,7 +58,9 @@ func (obj *Builder) newStockFromCatch(id string) *Stock {
 	info, _ := obj.getInfo(id)
 	market, _ := obj.getMarket(id)
 	finance, _ := obj.getFinance(id)
+	fmt.Println("Start Catch")
 	stockobj := New(info, market, finance)
+	fmt.Println("Catch Done")
 	return stockobj
 }
 

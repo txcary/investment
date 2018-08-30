@@ -1,6 +1,5 @@
 package restful
 import (
-	"time"
 	"net/http"
 	"io/ioutil"
 	"fmt"
@@ -19,7 +18,6 @@ func clientGet() {
 
 func ExampleStartServer() {
 	StartServer()
-	time.Sleep(5*time.Second)
 	clientGet()
 	//output:
 	//Listening 8080
