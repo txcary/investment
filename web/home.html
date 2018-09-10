@@ -1,0 +1,99 @@
+<!doctype html>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<html>
+	<meta charset="utf-8">
+	<title>Hello</title>
+	<body>
+	<div id="app" class="container-fluid">
+		<div class="row" v-for="(group,groupIdx) in groups">
+			<hr>
+			<div class="col-md-2">
+				<div v-if="!editing">{{group.name}}</div>
+				<div v-if="editing"><input class="form-control" v-model="group.name" value="group.name"></div>
+				<button v-on:click="del(groupIdx)" v-if="editing" class="btn btn-danger">delete</button>
+			</div>
+			<div class="col-md-8">
+				<div class="col-md-3" v-for="(item,itemIdx) in group.items">
+					<div style="height:64px" v-if="!editing">
+						<a v-bind:href="item.url">
+							<img width="24" height="24" v-bind:src="getImage(item.name)"/> 
+							{{item.name}}
+						</a>
+					</div>
+					<div v-if="editing">
+						<input class="form-control" v-model="item.name" value="item.name">
+						<input class="form-control" v-model="item.url" value="item.url">
+						<button v-on:click="del(groupIdx, itemIdx)" v-if="editing" class="btn btn-danger">delete</button>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+			</div>
+		</div>
+
+		<div class="row"> 
+			<div class="col-md-12">
+				<button v-on:click="edit" v-if="!editing" class="btn btn-primary">Edit</button>
+				<button v-on:click="done" v-if="editing" class="btn btn-success">Done</button>
+			</div>
+		</div>
+	</div>
+	</body>
+<script>
+	var app = new Vue({
+		el: '#app',
+		methods: {
+			getImage: function(url) {
+				return "http://t.jd.com/favicon.ico";
+			},
+			del: function(groupIdx, itemIdx) {
+				if(itemIdx===undefined){
+					alert(groupIdx);
+					this.groups.splice(groupIdx,1);	
+				} else {
+					var group = this.groups[groupIdx]; 
+					group.items.splice(itemIdx, 1);
+				}
+			},
+			edit: function() {
+				this.editing=true;
+			},
+			done: function() {
+				this.editing=false;
+			},
+		},
+		data: {
+			number: 0,
+			message: "Hello Wrold",
+			editing: false,
+			groups: [
+				{
+					name: "常用",
+					items: [
+						{name: "name1", url: "url1"},
+						{name: "name2", url: "url2"},
+						{name: "name3", url: "url3"},
+						{name: "name3", url: "url3"},
+						{name: "name3", url: "url3"},
+						{name: "name3", url: "url3"},
+						{name: "name3", url: "url3"},
+						{name: "name3", url: "url3"},
+					],
+				},
+				{
+					name: "工作",
+					items: [
+						{name: "name1", url: "url1"},
+						{name: "name2", url: "url2"},
+						{name: "name3", url: "url3"}
+					],
+				},
+			]
+		}
+	});
+</script>
+</html>

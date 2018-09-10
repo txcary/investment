@@ -1,8 +1,42 @@
 <!doctype html>
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
 <html>
 	<meta charset="utf-8">
 	<title>Hello</title>
 	<body>
-	<h1>Hello World</h1>
+	<div id="app" class="container-fluid">
+		<div class="row">
+			<div class="col-md-2" v-for="line in lines">
+				{{line.name}}: {{line.value}}
+			</div>
+		</div>
+	</div>
 	</body>
+<script>
+	var app = new Vue({
+		el: '#app',
+		methods: {
+			edit: function() {
+				this.editing=true;
+			},
+			done: function() {
+				this.editing=false;
+			},
+		},
+		data: {
+			message: "Hello Wrold",
+			editing: false,
+			lines: [
+				{name: "name1", value: "value1"},
+				{name: "name2", value: "value2"},
+				{name: "name3", value: "value3"}
+			]
+		}
+	});
+</script>
 </html>
