@@ -3,6 +3,8 @@ import(
 	"net/http"
 	"runtime"
 	"fmt"
+	"sync"
+	"errors"
 	"github.com/gorilla/mux"
 )
 
@@ -12,6 +14,7 @@ const (
 
 type Server struct {
 	router *mux.Router	
+	wg sync.WaitGroup
 }
 
 var serverObj *Server
@@ -27,9 +30,18 @@ func StartServer() {
 		serverObj := new(Server)
 		serverObj.Init()
 		go func() {
+			wg.Add(1)
 			fmt.Println("Listening "+serverPort)
 			http.ListenAndServe(":"+serverPort, serverObj.router)	
+			wg.Down()
 		}()
 		runtime.Gosched()
 	}
+}
+
+func Wait() err {
+	if serverObj == nil {
+		return errors.New("Server not started!")
+	}
+	serverObj.wg.Wait()
 }

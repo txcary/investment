@@ -1,0 +1,188 @@
+<!doctype html>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<html>
+	<meta charset="utf-8">
+	<title>Portfolio</title>
+
+<div id="app" class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<h3>Portfolio</h3>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<table class="table table-sm">
+				<thead>
+					<tr>
+						<th>mark</th>
+						<th>id</th>
+						<th>name</th>
+						<th>price</th>
+						<th>share</th>
+						<th>trade</th>
+						<th>capitalization</th>
+						<th>level</th>
+						<th>lowlevel</th>
+						<th>uplevel</th>
+						<th>marketlevel</th>
+						<th>commands</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(asset,idx) in portfolio">
+						<td>{{asset.mark}}</td>
+						<td>{{asset.id}}</td>
+						<td>{{asset.name}}</td>
+						<td>{{asset.price}}</td>
+						<td>{{asset.share}}</td>
+						<td>{{asset.trade}}</td>
+						<td>{{asset.capitalization}}</td>
+						<td>{{asset.level}}</td>
+						<td>{{asset.lowlevel}}</td>
+						<td>{{asset.uplevel}}</td>
+						<td>{{asset.marketlevel}}</td>
+						<td>
+							<div class="btn-group" role="group">
+								<button v-on:click="setCommand('buy', asset.id)" class="btn btn-success" type="button">Buy</button>
+								<button v-on:click="setCommand('sell', asset.id)"  class="btn btn-danger" type="button">Sell</button>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="btn-group" role="group">
+				<button v-on:click="setCommand('buy')" class="btn btn-success" type="button">Buy</button>
+				<button v-on:click="setCommand('sell')"  class="btn btn-danger" type="button">Sell</button>
+				<button v-on:click="setCommand('add')"  class="btn btn-primary" type="button">Add</button>
+				<button v-on:click="setCommand('score')"  class="btn btn-warning" type="button">Score</button>
+			</div>
+			<div>
+				<h4>{{command.pendingCommand}}</h4>
+				<div v-if="command.cmdNeedId" class="form-group">
+					<label>ID</label> 
+					<input class="form-control" id="cmd.id" v-bind:value="command.pendingId" />
+				</div>
+				<div v-if="command.cmdNeedAmount" class="form-group">
+					<label>Amount</label> 
+					<input class="form-control" id="cmd.amount" v-bind:value="command.pendingAmout" />
+				</div>
+				<div v-if="command.cmdNeedPrice" class="form-group">
+					<label>Price</label> 
+					<input class="form-control" id="cmd.price" v-bind:value="command.pendingPrice" />
+				</div>
+				<button v-if="command.cmdNeedSubmit" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<h3>Statistics</h3>
+			<table class="table">
+				<tbody>
+					<tr v-for="(value, key) in statistics">
+						<td>{{keyToName(key)}}</td>
+						<td>{{value}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+</body>
+<script>
+	var app = new Vue({
+		el: '#app',
+		methods: {
+			keyToName: function(key) {
+				if(key===undefined){
+					return "";
+				}
+				console.log(key);
+				if(this.nameOfKeys[key]===undefined) {
+					return key;
+				}else{
+					return this.nameOfKeys[key];
+				}
+			},
+			setCommand: function(cmd, id) {
+				this.command.pendingId = undefined;
+				this.command.pendingAmount = undefined;
+				this.command.pendingPrice = undefined;
+
+				switch(cmd) {
+				case "buy":
+					this.command.pendingCommand = "Buy";
+					this.command.cmdNeedId = true;
+					this.command.cmdNeedAmount = true;
+					this.command.cmdNeedPrice = true;
+					this.command.cmdNeedSubmit = true;
+					break;
+				case "sell":
+					this.command.pendingCommand = "Sell";
+					this.command.cmdNeedId = true;
+					this.command.cmdNeedAmount = true;
+					this.command.cmdNeedPrice = true;
+					this.command.cmdNeedSubmit = true;
+					break;
+				case "add":
+					this.command.pendingCommand = "Add";
+					this.command.cmdNeedId = false;
+					this.command.cmdNeedAmount = true;
+					this.command.cmdNeedPrice = false;
+					this.command.cmdNeedSubmit = true;
+					break;
+				case "score":
+					this.command.pendingCommand = "Score";
+					this.command.cmdNeedId = true;
+					this.command.cmdNeedAmount = true;
+					this.command.cmdNeedPrice = false;
+					this.command.cmdNeedSubmit = true;
+					break;
+				}
+				if(id!=undefined) {
+					this.command.pendingId = id;
+				}
+			},
+		},
+		data: {
+			nameOfKeys: {
+				refrate: "贴现率",
+				hkExchangeRate: "港币汇率",
+			},
+			statistics: {
+				refrate: 4.9,
+				hkExchangeRate: 0.8432,
+				hs300: 3225,
+				stockCapitalization: 20000,
+				hkCapitalization: 20000,
+				cash: 20000,
+				totalCapitalization: 60000,
+				estimatedCash: 20000,
+				totalProfitRate: 100,
+				yearProfitRate: -10,
+			},
+			command: {
+				pendingCommand: "",
+				pendingId: "",
+				pendingAmount: 0,
+				pendingPrice: 0,
+				cmdNeedId: false,
+				cmdNeedAmount: false,
+				cmdNeedPrice: false,
+				cmdNeedSubmit: false,
+			},
+			portfolio: [
+				{mark:"+", id: "600519", name: "贵州茅台", price: 646.0, share: 200, trade: 0, capitalization: 129200, level: 9.2, lowlevel: 11.1, uplevel:12.1, marketlevel: 14},
+			],
+		},
+	});
+</script>
+</html>

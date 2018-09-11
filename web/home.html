@@ -20,7 +20,7 @@
 				<div class="col-md-3" v-for="(item,itemIdx) in group.items">
 					<div style="height:64px" v-if="!editing">
 						<a v-bind:href="item.url">
-							<img width="24" height="24" v-bind:src="getImage(item.name)"/> 
+							<img width="24" height="24" v-bind:src="getImage(item.url)"/> 
 							{{item.name}}
 						</a>
 					</div>
@@ -32,10 +32,24 @@
 				</div>
 			</div>
 			<div class="col-md-2">
+					<div v-if="editing">
+						<input class="form-control" v-bind:id="'add.name.'+groupIdx">
+						<input class="form-control" v-bind:id="'add.url.'+groupIdx">
+						<button v-on:click="add(groupIdx)" v-if="editing" class="btn">Add</button>
+					</div>
+			</div>
+		</div>
+
+		<div class="row" v-if="editing"> 
+			<hr v-if="editing">
+			<div class="col-md-2" v-if="editing">
+				<input class="form-control" id="addGroup.name">
+				<button v-on:click="addGroup()" v-if="editing" class="btn">Add Group</button>
 			</div>
 		</div>
 
 		<div class="row"> 
+			<hr>
 			<div class="col-md-12">
 				<button v-on:click="edit" v-if="!editing" class="btn btn-primary">Edit</button>
 				<button v-on:click="done" v-if="editing" class="btn btn-success">Done</button>
@@ -47,12 +61,39 @@
 	var app = new Vue({
 		el: '#app',
 		methods: {
+			addGroup: function() {
+				var name = document.getElementById('addGroup.name').value;
+				if(name==="") {
+					return;
+				}
+				if(this.groups===undefined) {
+					this.groups = new Array();
+				}
+				this.groups.push({name: name, items: new Array()});
+			},
+			add: function(groupIdx) {
+				var name = document.getElementById('add.name.'+groupIdx).value;
+				var url = document.getElementById('add.url.'+groupIdx).value;
+				if(name==="") {
+					return
+				}
+				if(url==="") {
+					return
+				}
+				if(this.groups[groupIdx].items===undefined) {
+					this.groups[groupIdx].items = new Array();
+				}
+				this.groups[groupIdx].items.push({name:name, url:url});
+			},
 			getImage: function(url) {
-				return "http://t.jd.com/favicon.ico";
+				var strs = url.split('/');
+				console.log(strs);
+				var image = "http://"+strs[2]+"/favicon.ico";
+				console.log(image);
+				return image;
 			},
 			del: function(groupIdx, itemIdx) {
 				if(itemIdx===undefined){
-					alert(groupIdx);
 					this.groups.splice(groupIdx,1);	
 				} else {
 					var group = this.groups[groupIdx]; 
@@ -74,22 +115,22 @@
 				{
 					name: "常用",
 					items: [
-						{name: "name1", url: "url1"},
-						{name: "name2", url: "url2"},
-						{name: "name3", url: "url3"},
-						{name: "name3", url: "url3"},
-						{name: "name3", url: "url3"},
-						{name: "name3", url: "url3"},
-						{name: "name3", url: "url3"},
-						{name: "name3", url: "url3"},
+						{name: "name1", url: "http://www.163.com"},
+						{name: "name2", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"},
 					],
 				},
 				{
 					name: "工作",
 					items: [
-						{name: "name1", url: "url1"},
-						{name: "name2", url: "url2"},
-						{name: "name3", url: "url3"}
+						{name: "name1", url: "http://www.163.com"},
+						{name: "name2", url: "http://www.163.com"},
+						{name: "name3", url: "http://www.163.com"}
 					],
 				},
 			]
