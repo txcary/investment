@@ -1,20 +1,40 @@
 <!doctype html>
 <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
-<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
-<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
 <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<link rel="shortcut icon" type="image/png" href="images/stocks-16.png"/>
+
+<script data-main="js/portfolio.js" src="https://cdn.bootcss.com/require.js/2.3.5/require.js"></script>
+
 <html>
 	<meta charset="utf-8">
 	<title>Portfolio</title>
-
-<div id="app" class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-			<h3>Portfolio</h3>
+	<body>
+<div id="app">
+	<div class="row bg-dark text-light">
+		<div class="col-md-10">
+			<h1>
+			<img height="64px" width="64px" src="images/stocks-100.png"/>
+			Portfolio <small>Manage your portfolio</small></h1>
+		</div>
+		<div class="col-md-2">
+				<button v-if="isLogined" class="btn pull-right btn-link" v-on:click="logout">Logout {{userName}}</button>
 		</div>
 	</div>
-	<div class="row">
+
+	<div class="row align-items-center" v-if="!isLogined" style="height:480px;">
+		<div class="col-md-4"></div>
+		<div class="col-md-4">
+		<input v-if="!isLogined" class="form-control" id="login.user" placeholder="User Name"/>
+		<input v-if="!isLogined" type="password" class="form-control" id="login.passwd" placeholder="Password"/>
+		<button v-if="!isLogined" class="btn pull-right btn-primary" v-on:click="login">Login</button>
+		</div>
+		<div class="col-md-4"></div>
+	</div>
+
+	<div class="row" v-if="isLogined">
 		<div class="col-md-12">
 			<table class="table table-sm">
 				<thead>
@@ -48,8 +68,8 @@
 						<td>{{asset.marketlevel}}</td>
 						<td>
 							<div class="btn-group" role="group">
-								<button v-on:click="setCommand('buy', asset.id)" class="btn btn-success" type="button">Buy</button>
-								<button v-on:click="setCommand('sell', asset.id)"  class="btn btn-danger" type="button">Sell</button>
+								<button v-on:click="setCommand('buy', asset.id)" class="btn btn-link" type="button">Buy</button>
+								<button v-on:click="setCommand('sell', asset.id)"  class="btn btn-link" type="button">Sell</button>
 							</div>
 						</td>
 					</tr>
@@ -57,13 +77,14 @@
 			</table>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-md-6">
+	<div class="row" v-if="isLogined">
+		<div class="col-md-4">
+			commands
 			<div class="btn-group" role="group">
-				<button v-on:click="setCommand('buy')" class="btn btn-success" type="button">Buy</button>
-				<button v-on:click="setCommand('sell')"  class="btn btn-danger" type="button">Sell</button>
-				<button v-on:click="setCommand('add')"  class="btn btn-primary" type="button">Add</button>
-				<button v-on:click="setCommand('score')"  class="btn btn-warning" type="button">Score</button>
+				<button v-on:click="setCommand('buy')" class="btn btn-link" type="button">Buy</button>
+				<button v-on:click="setCommand('sell')"  class="btn btn-link" type="button">Sell</button>
+				<button v-on:click="setCommand('add')"  class="btn btn-link" type="button">Add</button>
+				<button v-on:click="setCommand('score')"  class="btn btn-link" type="button">Score</button>
 			</div>
 			<div>
 				<h4>{{command.pendingCommand}}</h4>
@@ -82,7 +103,9 @@
 				<button v-if="command.cmdNeedSubmit" class="btn btn-primary">Submit</button>
 			</div>
 		</div>
-		<div class="col-md-6">
+		<div class="col-md-4">
+		</div>
+		<div class="col-md-4">
 			<h3>Statistics</h3>
 			<table class="table">
 				<tbody>
@@ -97,92 +120,4 @@
 </div>
 
 </body>
-<script>
-	var app = new Vue({
-		el: '#app',
-		methods: {
-			keyToName: function(key) {
-				if(key===undefined){
-					return "";
-				}
-				console.log(key);
-				if(this.nameOfKeys[key]===undefined) {
-					return key;
-				}else{
-					return this.nameOfKeys[key];
-				}
-			},
-			setCommand: function(cmd, id) {
-				this.command.pendingId = undefined;
-				this.command.pendingAmount = undefined;
-				this.command.pendingPrice = undefined;
-
-				switch(cmd) {
-				case "buy":
-					this.command.pendingCommand = "Buy";
-					this.command.cmdNeedId = true;
-					this.command.cmdNeedAmount = true;
-					this.command.cmdNeedPrice = true;
-					this.command.cmdNeedSubmit = true;
-					break;
-				case "sell":
-					this.command.pendingCommand = "Sell";
-					this.command.cmdNeedId = true;
-					this.command.cmdNeedAmount = true;
-					this.command.cmdNeedPrice = true;
-					this.command.cmdNeedSubmit = true;
-					break;
-				case "add":
-					this.command.pendingCommand = "Add";
-					this.command.cmdNeedId = false;
-					this.command.cmdNeedAmount = true;
-					this.command.cmdNeedPrice = false;
-					this.command.cmdNeedSubmit = true;
-					break;
-				case "score":
-					this.command.pendingCommand = "Score";
-					this.command.cmdNeedId = true;
-					this.command.cmdNeedAmount = true;
-					this.command.cmdNeedPrice = false;
-					this.command.cmdNeedSubmit = true;
-					break;
-				}
-				if(id!=undefined) {
-					this.command.pendingId = id;
-				}
-			},
-		},
-		data: {
-			nameOfKeys: {
-				refrate: "贴现率",
-				hkExchangeRate: "港币汇率",
-			},
-			statistics: {
-				refrate: 4.9,
-				hkExchangeRate: 0.8432,
-				hs300: 3225,
-				stockCapitalization: 20000,
-				hkCapitalization: 20000,
-				cash: 20000,
-				totalCapitalization: 60000,
-				estimatedCash: 20000,
-				totalProfitRate: 100,
-				yearProfitRate: -10,
-			},
-			command: {
-				pendingCommand: "",
-				pendingId: "",
-				pendingAmount: 0,
-				pendingPrice: 0,
-				cmdNeedId: false,
-				cmdNeedAmount: false,
-				cmdNeedPrice: false,
-				cmdNeedSubmit: false,
-			},
-			portfolio: [
-				{mark:"+", id: "600519", name: "贵州茅台", price: 646.0, share: 200, trade: 0, capitalization: 129200, level: 9.2, lowlevel: 11.1, uplevel:12.1, marketlevel: 14},
-			],
-		},
-	});
-</script>
 </html>

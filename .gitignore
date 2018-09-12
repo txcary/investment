@@ -10,5 +10,10 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+#tmp files
 *~
 .*~
+
+#3rd party
+web/js/3rd/*
