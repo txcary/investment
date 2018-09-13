@@ -8,10 +8,6 @@ import(
 	"github.com/gorilla/mux"
 )
 
-const (
-	serverPort string = "8080"
-)
-
 type Server struct {
 	router *mux.Router	
 	wg sync.WaitGroup
@@ -23,25 +19,28 @@ func (obj *Server) Init() {
 	obj.router = mux.NewRouter().StrictSlash(true)
 	obj.InitStock()
 	obj.InitRoot()
+	obj.InitPortfolio()
 }
 
-func StartServer() {
+func StartServer(serverPort string) {
 	if serverObj == nil {
-		serverObj := new(Server)
+		serverObj = new(Server)
 		serverObj.Init()
 		go func() {
-			wg.Add(1)
+			serverObj.wg.Add(1)
 			fmt.Println("Listening "+serverPort)
 			http.ListenAndServe(":"+serverPort, serverObj.router)	
-			wg.Down()
+			fmt.Println("Server stoped")
+			serverObj.wg.Done()
 		}()
 		runtime.Gosched()
 	}
 }
 
-func Wait() err {
+func Wait() error {
 	if serverObj == nil {
 		return errors.New("Server not started!")
 	}
 	serverObj.wg.Wait()
+	return nil
 }

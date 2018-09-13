@@ -11,5 +11,6 @@ func (obj *Server) getRootPath() (path string) {
 
 func (obj *Server) InitRoot() {
 	rootPath := obj.getRootPath()	
-	obj.router.Handle("/", http.FileServer(http.Dir(rootPath)))
+	//obj.router.Handle("/web/", http.FileServer(http.Dir(rootPath)))
+	obj.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(rootPath))))
 }

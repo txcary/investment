@@ -1,5 +1,4 @@
 var secureJson;
-
 require.config({
 	baseUrl: 'js',
 	paths: {
@@ -15,11 +14,22 @@ require(['securejson'], function(sj){
 });
 var app = new Vue({
 	el: '#app',
+	created: function() {
+		this.userName = getCookie("portfolio","userName");
+		this.userPasswd = getCookie("portfolio","userPasswd");
+		if(this.userName!="" && this.userPassed!="") {
+			this.isLogined=true;
+		}else{
+			this.logout();
+		}
+	},
 	methods: {
 		logout: function() {
 			this.userName="";
 			this.userPasswd="";
 			this.isLogined=false;
+			delCookie("portfolio", "userName");
+			delCookie("portfolio", "userPasswd");
 		},
 		login: function() {
 			userName = document.getElementById('login.user').value;
@@ -34,9 +44,33 @@ var app = new Vue({
 				return;
 			}
 			this.userPasswd = userPasswd;
-			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "");
-			alert(str);
 			this.isLogined=true;
+			setCookie("portfolio", "userName", this.userName);
+			setCookie("portfolio", "userPasswd", this.userPasswd);
+		},
+		getPortfolioFromServer() {
+			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "");
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/portfolio/getjson", true);
+			xhr.setRequestHeader('content-type', 'application/json');
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState== XMLHttpRequest.DONE){
+					alert(xhr.responseText);
+				}
+			}
+			xhr.send(str);
+		},
+		putPortfolioToServer() {
+			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "MyData");
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/portfolio/putjson", true);
+			xhr.setRequestHeader('content-type', 'application/json');
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState== XMLHttpRequest.DONE){
+					alert(xhr.responseText);
+				}
+			}
+			xhr.send(str);
 		},
 		keyToName: function(key) {
 			if(key===undefined){
@@ -123,3 +157,29 @@ var app = new Vue({
 		],
 	},
 });
+
+
+function setCookie(space,name,value,exdays){
+    var d = new Date();
+    var name = space+"_"+name;
+    if(exdays===undefined) {
+    	exdays = 1;
+    }
+    d.setTime(d.getTime()+(exdays*24*60*60*1000));
+    var expires = "expires="+d.toGMTString();
+    document.cookie = name+"="+value+"; "+expires;
+}
+
+function getCookie(space,name){
+    var name = space+"_"+name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i].trim();
+        if (c.indexOf(name)==0) { return c.substring(name.length,c.length); }
+    }
+    return "";
+}
+
+function delCookie(space,name){
+	setCookie(space,name,"",-1);
+}
