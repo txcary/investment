@@ -2,7 +2,6 @@ package restful
 import(
 	"net/http"
 	"runtime"
-	"fmt"
 	"sync"
 	"errors"
 	"github.com/gorilla/mux"
@@ -28,9 +27,7 @@ func StartServer(serverPort string) {
 		serverObj.Init()
 		go func() {
 			serverObj.wg.Add(1)
-			fmt.Println("Listening "+serverPort)
 			http.ListenAndServe(":"+serverPort, serverObj.router)	
-			fmt.Println("Server stoped")
 			serverObj.wg.Done()
 		}()
 		runtime.Gosched()

@@ -60,6 +60,16 @@ var app = new Vue({
 			}
 			xhr.send(str);
 		},
+		getStock: function(id,callback) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "/stock/"+id, true);
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState== XMLHttpRequest.DONE){
+					callback(xhr.responseText);
+				}
+			}
+			xhr.send();
+		},
 		putPortfolioToServer() {
 			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "MyData");
 			var xhr = new XMLHttpRequest();
@@ -71,6 +81,85 @@ var app = new Vue({
 				}
 			}
 			xhr.send(str);
+		},
+		getPortfolioIdx: function(id) {
+			for(var i=0;i<this.portfolio.length;i++) {
+				if(this.portfolio[i].id==id) {
+					return i;
+				}
+			}
+			return undefined;
+		},
+		doTrade: function(id, amount, price) {
+			var self = this;
+			if(id===undefined) {
+				alert("ID not valid!");
+				return;
+			}
+			if(price<0) {
+				alert("Price not valid!");
+				return;
+			}
+			var idx = this.getPortfolioIdx(id);
+			if(idx===undefined) {
+				if(amount<0) {
+					alert(id+" not exist in portfolio!");
+					return;
+				}
+				this.getStock(id, function(resp){
+					if(resp===undefined) {
+						alert("Can not get data of id "+id);
+						return;
+					}
+					var stock = JSON.parse(resp);
+					var item = {
+						id: id,
+						name: stock.Name,
+						share: 0,
+						price: 0,
+					};
+					self.portfolio.push(item);
+					self.doTrade(id, amount, price);
+				});
+				return;
+			}
+			var tradedShare = this.portfolio[idx].share + parseInt(amount);
+			if(tradedShare <0 ) {
+				alert("No enough share!");
+				return;
+			}
+			if(tradedShare==0) {
+				this.portfolio.splice(idx,1);
+				return;
+			}
+			this.portfolio[idx].share = tradedShare;
+			this.portfolio[idx].price = parseFloat(price);
+		},
+		doScore: function(id, amount) {
+			var idx = this.getPortfolioIdx(id);
+			if(idx===undefined) {
+				alert("ID not valid!");
+				return;
+			}
+			this.portfolio[idx].score = amount;
+		},
+		commandSubmit: function() {
+			if(this.command.pendingCommand===undefined) {
+				return;
+			}
+			var id = this.command.pendingId;
+			var amount = this.command.pendingAmount;
+			var price = this.command.pendingPrice;
+			switch(this.command.pendingCommand) {
+			case "Sell":
+				return this.doTrade(id, -amount, price);
+			case "Buy":
+				return this.doTrade(id, amount, price);
+			case "Add":
+				//return this.doAdd(obj.pendingId, obj.pendingAmount);
+			case "Score":
+				return this.doScore(id, amount);
+			}
 		},
 		setCommand: function(cmd, id) {
 			this.command.pendingId = undefined;

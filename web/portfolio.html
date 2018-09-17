@@ -52,6 +52,7 @@
 						<th>mark</th>
 						<th>id</th>
 						<th>name</th>
+						<th>score</th>
 						<th>price</th>
 						<th>share</th>
 						<th>trade</th>
@@ -68,6 +69,7 @@
 						<td>{{asset.mark}}</td>
 						<td>{{asset.id}}</td>
 						<td>{{asset.name}}</td>
+						<td>{{asset.score}}</td>
 						<td>{{asset.price}}</td>
 						<td>{{asset.share}}</td>
 						<td>{{asset.trade}}</td>
@@ -104,13 +106,13 @@
 				</div>
 				<div v-if="command.cmdNeedAmount" class="form-group">
 					<label>Amount</label> 
-					<input class="form-control" id="cmd.amount" v-model="command.pendingAmout" />
+					<input class="form-control" id="cmd.amount" v-model="command.pendingAmount" />
 				</div>
 				<div v-if="command.cmdNeedPrice" class="form-group">
 					<label>Price</label> 
 					<input class="form-control" id="cmd.price" v-model="command.pendingPrice" />
 				</div>
-				<button v-if="command.cmdNeedSubmit" class="btn btn-primary">Submit</button>
+				<button v-if="command.cmdNeedSubmit" class="btn btn-primary" v-on:click="commandSubmit">Submit</button>
 			</div>
 		</div>
 		<div class="col-md-4">
@@ -127,7 +129,6 @@
 						<td>{{tag.displayAs}}</td>
 						<td>
 							<div v-if="!statisticsView.editing">{{statistics[tag.key]}}</div>
-							<div v-if="statisticsView.editing">{{statistics[tag.key]}}</div>
 							<input v-if="statisticsView.editing" class="form-control" v-model="statistics[tag.key]"/>
 						</td>
 					</tr>
