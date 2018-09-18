@@ -5,10 +5,8 @@
 
 <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
 <link rel="shortcut icon" type="image/png" href="images/stocks-16.png"/>
-
-<script data-main="js/portfolio.js" src="https://cdn.bootcss.com/require.js/2.3.5/require.js"></script>
-
-
+<script data-main="js/securejson_adapter.js" src="https://cdn.bootcss.com/require.js/2.3.5/require.js"></script>
+<script src="js/portfolio.js" type="module"></script>
 
 <html>
 	<head>
@@ -19,135 +17,91 @@
 	<meta charset="utf-8">
 	<title>Portfolio</title>
 	<body>
-<div id="app" class="container-fluid" style="max-width:950px;">
-	<div class="row bg-dark text-light row-margin-20">
-		<div class="col-md-10">
-			<h1>
-			<img height="64px" width="64px" src="images/stocks-100.png"/>
-			Portfolio <small>Manage your portfolio</small></h1>
-		</div>
-		<div class="col-md-2">
-				<button v-if="isLogined" class="btn pull-right btn-link" v-on:click="logout">Logout {{userName}}</button>
-		</div>
-	</div>
-
-	<div class="row align-items-center row-margin-20" v-if="!isLogined" style="height:480px;">
-		<div class="col-md-4"></div>
-		<div class="col-md-4">
-		<input v-if="!isLogined" class="form-control" id="login.user" placeholder="User Name"/>
-		<input v-if="!isLogined" type="password" class="form-control" id="login.passwd" placeholder="Password"/>
-		<button v-if="!isLogined" class="btn pull-right btn-primary" v-on:click="login">Login</button>
-
+		<div id="app" class="container-fluid" style="max-width:950px;">
+			<div class="row bg-dark text-light row-margin-20">
+				<div class="col-md-10">
+					<h1>
+					<img height="64px" width="64px" src="images/stocks-100.png"/>
+					Portfolio <small>Manage your portfolio</small></h1>
+				</div>
+				<div class="col-md-2">
+						<button v-if="isLogined" class="btn pull-right btn-link" v-on:click="logout">Logout {{userName}}</button>
+				</div>
+			</div>
+		
+			<div class="row align-items-center row-margin-20" v-if="!isLogined" style="height:480px;">
+				<div class="col-md-4"></div>
+				<div class="col-md-4">
+				<input v-if="!isLogined" class="form-control" id="login.user" placeholder="User Name"/>
+				<input v-if="!isLogined" type="password" class="form-control" id="login.passwd" placeholder="Password"/>
+				<button v-if="!isLogined" class="btn pull-right btn-primary" v-on:click="login">Login</button>
+		
 <button v-if="!isLogined" class="btn pull-right btn-danger" v-on:click="putPortfolioToServer">Test</button>
-
-		</div>
-		<div class="col-md-4"></div>
-	</div>
-
-	<div class="row row-margin-20" v-if="isLogined">
-		<div class="col-md-12">
-			<table class="table table-sm">
-				<thead>
-					<tr>
-						<th>mark</th>
-						<th>id</th>
-						<th>name</th>
-						<th>score</th>
-						<th>price</th>
-						<th>share</th>
-						<th>trade</th>
-						<th>capitalization</th>
-						<th>level</th>
-						<th>lowlevel</th>
-						<th>uplevel</th>
-						<th>marketlevel</th>
-						<th>commands</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="(asset,idx) in portfolio">
-						<td>{{asset.mark}}</td>
-						<td>{{asset.id}}</td>
-						<td>{{asset.name}}</td>
-						<td>{{asset.score}}</td>
-						<td>{{asset.price}}</td>
-						<td>{{asset.share}}</td>
-						<td>{{asset.trade}}</td>
-						<td>{{asset.capitalization}}</td>
-						<td>{{asset.level}}</td>
-						<td>{{asset.lowlevel}}</td>
-						<td>{{asset.uplevel}}</td>
-						<td>{{asset.marketlevel}}</td>
-						<td>
-							<div class="btn-group" role="group">
-								<button v-on:click="setCommand('buy', asset.id)" class="btn btn-link" type="button">Buy</button>
-								<button v-on:click="setCommand('sell', asset.id)"  class="btn btn-link" type="button">Sell</button>
+		
+				</div>
+				<div class="col-md-4"></div>
+			</div>
+		
+			<div class="row row-margin-20" v-if="isLogined">
+				<div class="col-md-12">
+					<vtable 
+						v-bind:titles="componentData.tableData.titles" 
+						v-bind:datas="componentData.tableData.datas" 
+						v-bind:commands="componentData.tableData.commands" 
+						v-on:command="setCommand($event.command,componentData.tableData.datas[$event.index].id)">
+					</vtable>
+				</div>
+			</div>
+			<div class="row row-margin-20" v-if="isLogined">
+				<div class="col-md-4">
+					<div class="tabbable" id="tabs">
+						<ul class="nav nav-tabs">
+							<li class="nav-item" v-for="(cmd,key) in componentData.commandData">
+								<a class="nav-link" v-bind:href="'#tab'+key" data-toggle="tab">{{cmd.name}}</a>
+							</li>
+						</ul>
+						<div class="tab-content">
+							<div class="tab-pane" v-bind:id="'tab'+key" data-toggle="pane" v-for="(cmd,key) in componentData.commandData">
+							<vform 
+								v-bind:datas="cmd.datas"
+								v-on:submit="commandSubmit(key, $event)" 
+								v-bind:button_name="cmd.name"
+							></vform>
+		
 							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	</div>
-	<div class="row row-margin-20" v-if="isLogined">
-		<div class="col-md-4">
-			commands
-			<div class="btn-group" role="group">
-				<button v-on:click="setCommand('buy')" class="btn btn-link" type="button">Buy</button>
-				<button v-on:click="setCommand('sell')"  class="btn btn-link" type="button">Sell</button>
-				<button v-on:click="setCommand('add')"  class="btn btn-link" type="button">Add</button>
-				<button v-on:click="setCommand('score')"  class="btn btn-link" type="button">Score</button>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4">
+				</div>
+				<div class="col-md-4">
+					<h3>
+						Statistics
+						<button v-if="!componentData.statisticsData.editing" class="btn btn-link btn-sm" v-on:click="componentData.statisticsData.editing=true">edit</button> 
+						<button v-if="componentData.statisticsData.editing" class="btn btn-success btn-sm" v-on:click="componentData.statisticsData.editing=false">Done</button> 
+					</h3>
+					<veditable 
+						v-for="tag in componentData.statisticsData.shownTagsAsEditable"
+						v-bind:editing="componentData.statisticsData.editing" 
+						v-bind:title="tag.displayAs" 
+						v-model="componentData.statisticsData.data[tag.key]" 
+					></veditable>
+					<veditable 
+						v-if="componentData.statisticsData.editing"
+						v-for="tag in componentData.statisticsData.hidenTagsAsEditable"
+						v-bind:editing="true" 
+						v-bind:title="tag.displayAs" 
+						v-model="componentData.statisticsData.data[tag.key]" 
+					></veditable>
+					<veditable 
+						v-for="tag in componentData.statisticsData.shownTagsAsReadonly"
+						v-bind:editing="false" 
+						v-bind:title="tag.displayAs" 
+						v-model="componentData.statisticsData.data[tag.key]" 
+					></veditable>
+				</div>
 			</div>
-			<div>
-				<h4>{{command.pendingCommand}}</h4>
-				<div v-if="command.cmdNeedId" class="form-group">
-					<lable>ID</lable>
-					<input class="form-control" id="cmd.id" v-model="command.pendingId" />
-				</div>
-				<div v-if="command.cmdNeedAmount" class="form-group">
-					<label>Amount</label> 
-					<input class="form-control" id="cmd.amount" v-model="command.pendingAmount" />
-				</div>
-				<div v-if="command.cmdNeedPrice" class="form-group">
-					<label>Price</label> 
-					<input class="form-control" id="cmd.price" v-model="command.pendingPrice" />
-				</div>
-				<button v-if="command.cmdNeedSubmit" class="btn btn-primary" v-on:click="commandSubmit">Submit</button>
-			</div>
 		</div>
-		<div class="col-md-4">
-		</div>
-		<div class="col-md-4">
-			<h3>
-				Statistics
-				<button v-if="!statisticsView.editing" class="btn btn-link btn-sm" v-on:click="statisticsView.editing=true">edit</button> 
-				<button v-if="statisticsView.editing" class="btn btn-link btn-sm" v-on:click="statisticsView.editing=false">Done</button> 
-			</h3>
-			<table class="table table-sm">
-				<tbody>
-					<tr v-for="tag in statisticsView.shownTagsAsEditable">
-						<td>{{tag.displayAs}}</td>
-						<td>
-							<div v-if="!statisticsView.editing">{{statistics[tag.key]}}</div>
-							<input v-if="statisticsView.editing" class="form-control" v-model="statistics[tag.key]"/>
-						</td>
-					</tr>
-					<tr v-if="statisticsView.editing" v-for="tag in statisticsView.hidenTagsAsEditable">
-						<td>{{tag.displayAs}}</td>
-						<td>
-							<input v-if="statisticsView.editing" class="form-control" v-model="statistics[tag.key]"/>
-						</td>
-					</tr>
-
-					<tr v-if="!statisticsView.editing" v-for="tag in statisticsView.shownTagsAsReadonly">
-						<td>{{tag.displayAs}}</td>
-						<td>{{statistics[tag.key]}}</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	</div>
-</div>
 
 </body>
 </html>
