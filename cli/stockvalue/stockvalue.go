@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"io/ioutil"
 	"fmt"
+	"os"
+	"time"
 )
 
-func clientGet() {
-	//resp, err := http.Get("http://localhost:8080/stock/{00700}")
-	resp, err := http.Get("http://localhost:8080/stock/00700")
+func clientGet(id string) {
+	resp, err := http.Get("http://localhost:8080/stock/"+id)
 	if err != nil {
 		panic(err)
 	}
@@ -21,11 +22,16 @@ func clientGet() {
 }
 
 func startServer() {
-	restful.StartServer()
+	restful.StartServer("8080")
 }
 
 
 func main() {
-	startServer()	
-	clientGet()
+	if len(os.Args) > 1{
+		startServer()
+		time.Sleep(1000)	
+		clientGet(os.Args[1])
+	}else{
+		fmt.Println("Usage: stockvalue <id>")
+	}
 }
