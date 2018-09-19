@@ -139,6 +139,11 @@ var app = new Vue({
 			}
 			this.componentData.tableData.datas[idx].score = amount;
 		},
+		doAdd: function(amount) {
+			var amountFloat = parseFloat(amount);
+			this.componentData.statisticsData.data.cash += amountFloat;
+			this.componentData.statisticsData.data.virtualShare += amountFloat/this.componentData.statisticsData.data.virtualValue;
+		},
 		commandSubmit: function(cmd, event) {
 			var formValue = Object();
 			for(var idx in event) {
@@ -150,7 +155,7 @@ var app = new Vue({
 			case "buy":
 				return this.doTrade(formValue['id'], formValue['amount'], formValue['price']);
 			case "add":
-				//return this.doAdd(obj.pendingId, obj.pendingAmount);
+				return this.doAdd(formValue['amount']);
 			case "score":
 				return this.doScore(formValue['id'], formValue['amount']);
 			}
