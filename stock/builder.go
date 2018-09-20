@@ -6,7 +6,6 @@ import (
 	"github.com/txcary/investment/db"
 	"github.com/txcary/lixinger"
 	"github.com/txcary/investment/config"
-	"github.com/txcary/investment/utils"
 )
 
 type Builder struct {
@@ -129,8 +128,8 @@ func BuilderInstance() *Builder {
 		obj = new(Builder)
 		obj.lixingerObj = lixinger.New(token)
 
-		dbfile := config.Instance().GetString("stock", "db")
-		obj.stockDb = db.New(utils.Gopath()+utils.Slash()+"db"+utils.Slash()+dbfile)
+		dbpath := config.Instance().GetString("stock", "db")
+		obj.stockDb = db.New(dbpath)
 	}
 
 	return obj

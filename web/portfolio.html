@@ -5,8 +5,11 @@
 
 <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
 <link rel="shortcut icon" type="image/png" href="images/stocks-16.png"/>
+<script src="https://cdn.bootcss.com/require.js/2.3.5/require.js"></script>
+<!-- 
 <script data-main="js/securejson_adapter.js" src="https://cdn.bootcss.com/require.js/2.3.5/require.js"></script>
-<script src="js/portfolio.js" type="module"></script>
+ -->
+<script src="js/portfolio/portfolio.js" type="module"></script>
 
 <html>
 	<head>
@@ -35,9 +38,6 @@
 				<input v-if="!isLogined" class="form-control" id="login.user" placeholder="User Name"/>
 				<input v-if="!isLogined" type="password" class="form-control" id="login.passwd" placeholder="Password"/>
 				<button v-if="!isLogined" class="btn pull-right btn-primary" v-on:click="login">Login</button>
-		
-<button v-if="!isLogined" class="btn pull-right btn-danger" v-on:click="putPortfolioToServer">Test</button>
-		
 				</div>
 				<div class="col-md-4"></div>
 			</div>
@@ -78,7 +78,7 @@
 					<h3>
 						Statistics
 						<button v-if="!componentData.statisticsData.editing" class="btn btn-link btn-sm" v-on:click="componentData.statisticsData.editing=true">edit</button> 
-						<button v-if="componentData.statisticsData.editing" class="btn btn-success btn-sm" v-on:click="componentData.statisticsData.editing=false">Done</button> 
+						<button v-if="componentData.statisticsData.editing" class="btn btn-success btn-sm" v-on:click="doStatistics">Done</button> 
 					</h3>
 					<veditable 
 						v-for="tag in componentData.statisticsData.shownTagsAsEditable"
