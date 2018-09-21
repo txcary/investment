@@ -11,19 +11,32 @@ type Db struct {
 	mutex sync.Mutex
 }
 
-func (obj *Db) Get (key string, value interface{}) (err error) {
+func (obj *Db) GetBytes (key string) (bytes []byte, err error) {
 	obj.mutex.Lock()
-	bytes, err := obj.db.Get([]byte(key), nil)
+	bytes, err = obj.db.Get([]byte(key), nil)
 	obj.mutex.Unlock()
+	return
+}
+
+func (obj *Db) Get (key string, value interface{}) (err error) {
+	bytes, err := obj.GetBytes(key)
 	json.Unmarshal(bytes, value)
+	return
+}
+
+func (obj *Db) PutBytes (key string, bytes []byte) (err error) {
+	obj.mutex.Lock()
+	err = obj.db.Put([]byte(key), bytes, nil)
+	obj.mutex.Unlock()
 	return
 }
 
 func (obj *Db) Put (key string, value interface{}) (err error) {
 	bytes, err := json.Marshal(value)
-	obj.mutex.Lock()
-	err = obj.db.Put([]byte(key), bytes, nil)
-	obj.mutex.Unlock()
+	if err != nil {
+		return
+	}
+	err = obj.PutBytes(key, bytes)
 	return
 }
 

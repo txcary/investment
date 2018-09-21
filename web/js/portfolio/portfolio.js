@@ -32,10 +32,10 @@ var app = new Vue({
 		this.userPasswd = utils.GetCookie("portfolio","userPasswd");
 		if(this.userName!="" && this.userPassed!="") {
 			this.isLogined=true;
+			this.getPortfolioFromServer();
 		}else{
 			this.logout();
 		}
-		this.getPortfolioFromServer();
 	},
 	methods: {
 		logout: function() {
@@ -61,6 +61,7 @@ var app = new Vue({
 			this.isLogined=true;
 			utils.SetCookie("portfolio", "userName", this.userName);
 			utils.SetCookie("portfolio", "userPasswd", this.userPasswd);
+			this.getPortfolioFromServer();
 		},
 		getStock: function(id,callback) {
 			utils.HttpGet("/stock/"+id, callback);
@@ -75,11 +76,20 @@ var app = new Vue({
 			var self = this;
 			var callback = function(response) {
 				var obj = JSON.parse(response);
-				if(obj.statistics != undefined) {
-					this.componentData.statisticsData.data = obj.statistics; 
+				if(obj.EncryptedData == undefined) {
+					console.log("Error: No Ecrypted Data");
+					return;
 				}
-				if(obj.portfolio!=undefined) {
-					this.componentData.tableData.datas = obj.portfolio;
+
+				console.log("Encrypted-Data: "+obj.EncryptedData);
+				var dataStr = secureJson.Decrypt(self.userName, self.userPasswd, obj.EncryptedData)
+				console.log("Decrypted-Data: "+dataStr);
+				var data = JSON.parse(dataStr);
+				if(data.statistics != undefined) {
+					self.componentData.statisticsData.data = data.statistics; 
+				}
+				if(data.portfolio!=undefined) {
+					self.componentData.tableData.datas = data.portfolio;
 				}
 			};
 			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "");
@@ -89,7 +99,10 @@ var app = new Vue({
 			var dataStr = this.prepareServerDataJsonString();
 			var str = secureJson.GenerateJson(this.userName, this.userPasswd, dataStr);
 			console.log(str);
-			utils.HttpPostJson("/portfolio/putjson", alert, str);
+			var callback = function(response) {
+				console.log(response);
+			}
+			utils.HttpPostJson("/portfolio/putjson", callback, str);
 		},
 		getPortfolioIdx: function(id) {
 			for(var i=0;i<this.componentData.tableData.datas.length;i++) {

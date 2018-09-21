@@ -4,22 +4,15 @@ import (
 	"github.com/txcary/investment/utils"
 )
 
-type Decorator interface {
+type Builder interface {
 	Build(id string) (interface{}, bool)
-	Update(id string, object interface{})
 }
 
-type Builder struct {
-	decorator Decorator
+type BuilderBase struct {
+	decorator Builder
 }
 
-func (obj *Builder) Update(id string, object interface{}) {
-	if !utils.CheckNil(obj.decorator) {
-		obj.decorator.Update(id, object)
-	}
-}
-
-func (obj *Builder) Build(id string) (object interface{}, ok bool) {
+func (obj *BuilderBase) Build(id string) (object interface{}, ok bool) {
 	if !utils.CheckNil(obj.decorator) {
 		object, ok = obj.decorator.Build(id)
 		return
@@ -27,8 +20,12 @@ func (obj *Builder) Build(id string) (object interface{}, ok bool) {
 	return nil, false
 }
 
-func New(decorator Decorator) *Builder {
-	obj := new(Builder)
+func (obj *BuilderBase)Init(decorator Builder) {
 	obj.decorator = decorator
+}
+
+func New(decorator Builder) *BuilderBase {
+	obj := new(BuilderBase)
+	obj.Init(decorator)
 	return obj
 }
