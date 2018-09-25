@@ -12,7 +12,7 @@ func getErrorMessage(err error) []byte {
 	if err == nil {
 		return []byte(`{"code"=0}`)
 	} else {
-		return []byte(`{"code"=1, "msg"="`+err.Error()+`"}`)
+		return []byte(`{"code":1, "msg":"`+err.Error()+`"}`)
 	}
 }
 

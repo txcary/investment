@@ -75,7 +75,15 @@ var app = new Vue({
 		getPortfolioFromServer() {
 			var self = this;
 			var callback = function(response) {
+				console.log(response);
 				var obj = JSON.parse(response);
+				if(obj.code != undefined) {
+					if(obj.code!=0) {
+						alert(obj.msg);
+						self.logout();
+						return;
+					}
+				}
 				if(obj.EncryptedData == undefined) {
 					console.log("Error: No Ecrypted Data");
 					return;
