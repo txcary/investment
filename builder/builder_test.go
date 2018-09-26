@@ -3,7 +3,7 @@ package builder
 import (
 	"fmt"
 	"github.com/txcary/investment/db"
-	"github.com/txcary/investment/utils"
+	"github.com/txcary/goutils"
 )
 
 const (

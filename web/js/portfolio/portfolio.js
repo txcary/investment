@@ -1,3 +1,5 @@
+"use strict"
+
 import * as vtable from "../components/table.js";
 import * as veditable from "../components/editable.js";
 import * as vform from "../components/form.js";
@@ -33,6 +35,7 @@ var app = new Vue({
 		if(this.userName!="" && this.userPassed!="") {
 			this.isLogined=true;
 			this.getPortfolioFromServer();
+this.update();
 		}else{
 			this.logout();
 		}
@@ -63,8 +66,34 @@ var app = new Vue({
 			utils.SetCookie("portfolio", "userPasswd", this.userPasswd);
 			this.getPortfolioFromServer();
 		},
-		getStock: function(id,callback) {
-			utils.HttpGet("/stock/"+id, callback);
+		getStock: function(id) {
+			if(id===undefined) {
+				return undefined;
+			}
+			if(this.stocks==undefined) {
+				this.stocks = new Object();
+			}
+			if(this.stocks[id]==undefined) {
+				var resp = utils.HttpGet("/stock/"+id);
+				if(resp===undefined) {
+					alert("Can not get data of id "+id);
+					return undefined;
+				}
+				var stock = JSON.parse(resp);
+				if(stock.code!=undefined) {
+					if(stock.code>0) {
+						alert(stock.msg);
+						return undefined;
+					}
+				}
+				if(stock.Name==undefined || stock.Id==undefined) {
+					console.log("Error: stock data not valid.");
+					console.log(stock);
+					return undefined
+				}
+				this.stocks[id] = stock;
+			}
+			return this.stocks[id];
 		},
 		prepareServerDataJsonString() {
 			var obj = Object();
@@ -73,14 +102,14 @@ var app = new Vue({
 			return JSON.stringify(obj);
 		},
 		getPortfolioFromServer() {
-			var self = this;
-			var callback = function(response) {
-				console.log(response);
+			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "");
+			var response = utils.HttpPostJson("/portfolio/getjson", str);
+			if(response!=undefined) {
 				var obj = JSON.parse(response);
 				if(obj.code != undefined) {
 					if(obj.code!=0) {
 						alert(obj.msg);
-						self.logout();
+						this.logout();
 						return;
 					}
 				}
@@ -90,18 +119,19 @@ var app = new Vue({
 				}
 
 				console.log("Encrypted-Data: "+obj.EncryptedData);
-				var dataStr = secureJson.Decrypt(self.userName, self.userPasswd, obj.EncryptedData)
+				var dataStr = secureJson.Decrypt(this.userName, this.userPasswd, obj.EncryptedData)
 				console.log("Decrypted-Data: "+dataStr);
 				var data = JSON.parse(dataStr);
 				if(data.statistics != undefined) {
-					self.componentData.statisticsData.data = data.statistics; 
+					this.componentData.statisticsData.data = data.statistics; 
 				}
 				if(data.portfolio!=undefined) {
-					self.componentData.tableData.datas = data.portfolio;
+					this.componentData.tableData.datas = data.portfolio;
 				}
-			};
-			var str = secureJson.GenerateJson(this.userName, this.userPasswd, "");
-			utils.HttpPostJson("/portfolio/getjson", callback, str);
+			} else {
+				console.log("Error: can not connect to server!");
+				this.logout();
+			}
 		},
 		putPortfolioToServer() {
 			var dataStr = this.prepareServerDataJsonString();
@@ -110,7 +140,7 @@ var app = new Vue({
 			var callback = function(response) {
 				console.log(response);
 			}
-			utils.HttpPostJson("/portfolio/putjson", callback, str);
+			utils.HttpPostJsonAsync("/portfolio/putjson", str, callback);
 		},
 		getPortfolioIdx: function(id) {
 			for(var i=0;i<this.componentData.tableData.datas.length;i++) {
@@ -122,10 +152,29 @@ var app = new Vue({
 		},
 		update() {
 			//TODO: compute
+			var stat = this.componentData.statisticsData.data;
+			var datas = this.componentData.tableData.datas;
+
+			stat.totalCapitalization = 0;
+			for(var i=0; i<datas.length; i++) {
+				var stock = this.getStock(datas[i].id);
+				datas[i].price = stock.Price;
+				datas[i].capitalization = datas[i].price*datas[i].share;
+				
+				var factor1 = stock.SaftyFactor*stock.ExpectionFactor*stock.CashFactor*stock.FlowFactor;
+				var factor2 = stock.SaftyFactor;
+				datas[i].lowlevel = parseInt(100*factor1*(1-stat.refrate/(stock.ReturnStd*100))*0.2);
+				datas[i].uplevel = parseInt(100*factor2*(1-stat.refrate/(stock.ReturnHigh*100))*0.2);
+
+				stat.totalCapitalization += datas[i].capitalization;
+			}
+
+			for(var i=0; i<datas.length; i++) {
+				datas[i].level = parseInt(100*datas[i].capitalization/stat.totalCapitalization);
+			}
 			this.putPortfolioToServer();
 		},
 		doTrade: function(id, amount, price) {
-			var self = this;
 			if(id===undefined) {
 				alert("ID not valid!");
 				return;
@@ -140,22 +189,16 @@ var app = new Vue({
 					alert(id+" not exist in portfolio!");
 					return;
 				}
-				this.getStock(id, function(resp){
-					if(resp===undefined) {
-						alert("Can not get data of id "+id);
-						return;
-					}
-					var stock = JSON.parse(resp);
-					var item = {
-						id: id,
-						name: stock.Name,
-						share: 0,
-						price: 0,
-					};
-					self.componentData.tableData.datas.push(item);
-					self.doTrade(id, amount, price);
-				});
-				return;
+				var stock = this.getStock(id);
+
+				var item = {
+					id: id,
+					name: stock.Name,
+					share: 0,
+					price: 0,
+				};
+				this.componentData.tableData.datas.push(item);
+				idx = this.getPortfolioIdx(id);
 			}
 			var tradedShare = this.componentData.tableData.datas[idx].share + parseInt(amount);
 			if(tradedShare <0 ) {

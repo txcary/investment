@@ -1,7 +1,7 @@
 package db
 import (
 	"fmt"
-	"github.com/txcary/investment/utils"
+	"github.com/txcary/goutils"
 )
 
 type Data struct {

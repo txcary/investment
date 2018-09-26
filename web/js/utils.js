@@ -23,7 +23,7 @@ function DelCookie(space,name){
 	SetCookie(space,name,"",-1);
 }
 
-function HttpGet(url, callback) {
+function HttpGetAsync(url, callback) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("GET", url, true);
 	xhr.onreadystatechange = function() {
@@ -35,7 +35,19 @@ function HttpGet(url, callback) {
 
 }
 
-function HttpPostJson(url, callback, jsonStr) {
+function HttpGet(url) {
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET", url, false);
+	xhr.send();
+	if(xhr.readyState== XMLHttpRequest.DONE) {
+		return xhr.responseText;
+	} else {
+		console.log("Error: HttpGet Error!");
+	}
+	return undefined;
+}
+
+function HttpPostJsonAsync(url, jsonStr, callback) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", url, true);
 	xhr.setRequestHeader('content-type', 'application/json');
@@ -47,4 +59,17 @@ function HttpPostJson(url, callback, jsonStr) {
 	xhr.send(jsonStr);
 }
 
-export {SetCookie, GetCookie, DelCookie, HttpGet, HttpPostJson};
+function HttpPostJson(url, jsonStr) {
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", url, false);
+	xhr.setRequestHeader('content-type', 'application/json');
+	xhr.send(jsonStr);
+	if(xhr.readyState== XMLHttpRequest.DONE){
+		return xhr.responseText;
+	} else {
+		console.log("Error: HttpPostJson Error!");
+		return undefined;
+	}
+}
+
+export {SetCookie, GetCookie, DelCookie, HttpGet, HttpPostJson, HttpGetAsync, HttpPostJsonAsync};

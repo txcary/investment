@@ -1,7 +1,7 @@
 package builder
 
 import (
-	"github.com/txcary/investment/utils"
+	"github.com/txcary/goutils"
 )
 
 type Builder interface {
