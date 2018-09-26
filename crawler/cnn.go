@@ -1,9 +1,6 @@
-package cnn
+package crawler
 
 import (
-	"net/http"
-	"io/ioutil"
-	"bytes"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 )
@@ -20,31 +17,16 @@ var (
 )
 
 type Cnn struct {
+	Template	
 	Pe float64		
 }
 
-func (obj *Cnn) getUrl(id string) (url string) {
+func (obj *Cnn) GetUrl(id string) (url string) {
 	url = `https://money.cnn.com/data/markets/`+id+`/`
 	return
 }
 
-func (obj *Cnn) Process(id string) error {
-	url := obj.getUrl(id)
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}	
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	ioReader := bytes.NewReader(body)
-	doc, err := goquery.NewDocumentFromReader(ioReader)
-	if err != nil {
-		return err
-	}
-	
+func (obj *Cnn) Process(doc *goquery.Document) error {
 	tag := doc.Find("body")
 	for _,item := range pattern {
 		tag = tag.Find(item)
@@ -55,7 +37,8 @@ func (obj *Cnn) Process(id string) error {
 	return nil
 }
 
-func New() (obj *Cnn) {
+func NewCnn() (obj *Cnn) {
 	obj = new(Cnn)
-	return
+	obj.Template.Init(obj)
+	return 
 }
