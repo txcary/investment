@@ -14,8 +14,10 @@ func ExampleSohufund() {
 	obj := NewSohufund()
 	for _, id := range sohuids {
 		obj.Crawl(id)
-		fmt.Println(obj.Trend)
+		if obj.Trend > 0 {
+			fmt.Println("OK")
+		}
 	}
 	//output:
-	//TODO
+	//OK
 }

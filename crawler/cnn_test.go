@@ -16,8 +16,12 @@ func ExampleCnn() {
 	cnnObj := NewCnn()
 	for _, id := range cnnids {
 		cnnObj.Crawl(id)
-		fmt.Println(cnnObj.Pe)
+		if cnnObj.Pe != 0 {
+			fmt.Println("OK")
+		}
 	}
 	//output:
-	//TODO
+	//OK
+	//OK
+	//OK
 }

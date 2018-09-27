@@ -7,17 +7,18 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type Strategy interface {
-	GetUrl(id string) (string)
-	Process(*goquery.Document) error
+type TemplateHttp struct {
+	TemplateBase
 }
 
-type Template struct {
-	strategy Strategy	
-}
+func (obj *TemplateHttp) Crawl(id string) (err error) {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
 
-func (obj *Template) Crawl(id string) (err error) {
-	url := obj.strategy.GetUrl(id)
+	if !obj.strategy.CrawlNeeded(id) {
+		return
+	}
+	url := obj.strategy.GetUrl()
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -37,6 +38,3 @@ func (obj *Template) Crawl(id string) (err error) {
 	return	
 }
 
-func (obj *Template) Init(strategyInf Strategy) {
-	obj.strategy = strategyInf
-}
