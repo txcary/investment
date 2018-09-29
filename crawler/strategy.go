@@ -1,8 +1,7 @@
 package crawler
 
 type Strategy interface {
-	CrawlNeeded(id string)(bool)
-	GetUrl() (string)
+	CrawlNeeded(id string) bool
+	GetUrl() string
 	Process(interface{}) error
 }
-

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 )
+
 var (
 	pattern = [...]string{
 		"div#cnnBody",
@@ -17,25 +18,25 @@ var (
 )
 
 type Cnn struct {
-	TemplateHttp	
+	TemplateHttp
 	id string
-	Pe float64		
+	Pe float64
 }
 
-func (obj *Cnn) CrawlNeeded(id string)(bool) {
+func (obj *Cnn) CrawlNeeded(id string) bool {
 	obj.id = id
 	return true
 }
 
 func (obj *Cnn) GetUrl() (url string) {
-	url = `https://money.cnn.com/data/markets/`+obj.id+`/`
+	url = `https://money.cnn.com/data/markets/` + obj.id + `/`
 	return
 }
 
 func (obj *Cnn) Process(intf interface{}) error {
 	doc := intf.(*goquery.Document)
 	tag := doc.Find("body")
-	for _,item := range pattern {
+	for _, item := range pattern {
 		tag = tag.Find(item)
 		//fmt.Println(item, tag.Text())
 	}
@@ -47,5 +48,5 @@ func (obj *Cnn) Process(intf interface{}) error {
 func NewCnn() (obj *Cnn) {
 	obj = new(Cnn)
 	obj.SetStrategyToTemplate(obj)
-	return 
+	return
 }

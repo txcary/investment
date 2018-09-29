@@ -1,21 +1,21 @@
 package asset
-import (
-)
+
+import ()
 
 type Asset interface {
-	YieldIndicator() (float64)
-	TrendIndicator() (float64)
+	YieldIndicator() float64
+	TrendIndicator() float64
 }
 
 type AsyncData struct {
-	Value float64
-	Chan chan bool
-	IsRead bool
+	Value    float64
+	Chan     chan bool
+	IsRead   bool
 	IsWrited bool
 }
 
 type AssetBase struct {
-	id string	
+	id    string
 	yield *AsyncData
 	trend *AsyncData
 }
@@ -41,24 +41,23 @@ func NewAsyncData() *AsyncData {
 	return obj
 }
 
-
-func (obj *AssetBase)setYield(value float64) {
-	obj.yield.Set(value)	
+func (obj *AssetBase) setYield(value float64) {
+	obj.yield.Set(value)
 }
 
-func (obj *AssetBase)setTrend(value float64) {
-	obj.trend.Set(value)	
+func (obj *AssetBase) setTrend(value float64) {
+	obj.trend.Set(value)
 }
 
-func (obj *AssetBase)YieldIndicator() (res float64) {
+func (obj *AssetBase) YieldIndicator() (res float64) {
 	return obj.yield.Get()
 }
 
-func (obj *AssetBase)TrendIndicator() (res float64) {
+func (obj *AssetBase) TrendIndicator() (res float64) {
 	return obj.trend.Get()
 }
 
-func (obj *AssetBase)Init(id string) {
+func (obj *AssetBase) Init(id string) {
 	obj.id = id
 	obj.yield = NewAsyncData()
 	obj.trend = NewAsyncData()

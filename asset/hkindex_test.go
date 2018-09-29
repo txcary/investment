@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-func ExampleChinaindex() {
-	obj := NewChinaIndex("159919")
+func ExampleHkindex() {
+	obj := NewHkIndex("159920")
 	yield := obj.YieldIndicator()
 	trend := obj.TrendIndicator()
 	if yield > 0 {

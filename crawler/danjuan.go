@@ -1,36 +1,34 @@
 package crawler
 
 import (
+	"fmt"
 	"github.com/bitly/go-simplejson"
 	"strconv"
 	"strings"
 )
 
-var jisiluetfTitles = map[string]string{
-	"id":    "fund_id",
-	"name":  "fund_nm",
-	"index": "index_nm",
-	"pe":    "pe",
-	"pb":    "pb",
-	"over":  "discount_rt",
-	"total": "unit_total",
-}
-
-type Jisiluetf struct {
+type Danjuan struct {
 	TemplateJson
 	dataList []map[string]string
 	id       string
 	Name     string
-	Index    string
-	Over     float64
 	Pe       float64
 	Pb       float64
-	Total    float64
 	Roe      float64
+	Div      float64
 	IsValid  bool
 }
 
-func (obj *Jisiluetf) update() {
+var danjuanTitles = map[string]string{
+	"id":   "index_code",
+	"name": "name",
+	"pe":   "pe",
+	"pb":   "pb",
+	"roe":  "roe",
+	"div":  "yeild",
+}
+
+func (obj *Danjuan) update() {
 	obj.IsValid = false
 	for i, _ := range obj.dataList {
 		item := obj.dataList[i]
@@ -40,21 +38,15 @@ func (obj *Jisiluetf) update() {
 		obj.IsValid = true
 
 		obj.Name = item["name"]
-		obj.Index = item["index"]
-		obj.Over, _ = strconv.ParseFloat(item["over"], 32)
+		obj.Roe, _ = strconv.ParseFloat(item["roe"], 32)
 		obj.Pe, _ = strconv.ParseFloat(item["pe"], 32)
 		obj.Pb, _ = strconv.ParseFloat(item["pb"], 32)
-		obj.Total, _ = strconv.ParseFloat(item["total"], 32)
-		if obj.Pe > 0 {
-			obj.Roe = 100 * obj.Pb / obj.Pe
-		} else {
-			obj.Roe = 0
-		}
+		obj.Div, _ = strconv.ParseFloat(item["div"], 32)
 		break
 	}
 }
 
-func (obj *Jisiluetf) CrawlNeeded(id string) bool {
+func (obj *Danjuan) CrawlNeeded(id string) bool {
 	obj.id = id
 	if obj.dataList != nil {
 		obj.update()
@@ -65,35 +57,36 @@ func (obj *Jisiluetf) CrawlNeeded(id string) bool {
 	}
 }
 
-func (obj *Jisiluetf) GetUrl() (url string) {
-	url = `https://www.jisilu.cn/jisiludata/etf.php`
-	return
+func (obj *Danjuan) GetUrl() string {
+	return `https://danjuanapp.com/djapi/index_eva/dj`
 }
 
-func (obj *Jisiluetf) Process(intf interface{}) error {
+func (obj *Danjuan) Process(intf interface{}) error {
 	json := intf.(*simplejson.Json)
-	rows := json.Get("rows")
+	rows := json.Get("data").Get("items")
 	rowsArray, err := rows.Array()
 	if err != nil {
 		return err
 	}
 	for i, _ := range rowsArray {
-		cell := rows.GetIndex(i).Get("cell")
+		cell := rows.GetIndex(i)
 		var item = make(map[string]string)
-		for title, value := range jisiluetfTitles {
+		for title, value := range danjuanTitles {
 			item[title] = cell.Get(value).MustString()
+			if len(item[title]) == 0 {
+				asFloat := cell.Get(value).MustFloat64()
+				item[title] = fmt.Sprintf("%.3f", asFloat)
+			}
 			item[title] = strings.Replace(item[title], "%", "", -1)
 		}
 		obj.dataList = append(obj.dataList, item)
 	}
-
 	obj.update()
-
 	return nil
 }
 
-func NewJisiluetf() (obj *Jisiluetf) {
-	obj = new(Jisiluetf)
+func NewDanjuan() (obj *Danjuan) {
+	obj = new(Danjuan)
 	obj.SetStrategyToTemplate(obj)
 	return
 }

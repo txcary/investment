@@ -1,9 +1,9 @@
 package crawler
 
 import (
-	"net/http"
-	"io/ioutil"
 	"github.com/bitly/go-simplejson"
+	"io/ioutil"
+	"net/http"
 )
 
 type TemplateJson struct {
@@ -13,7 +13,7 @@ type TemplateJson struct {
 func (obj *TemplateJson) Crawl(id string) (err error) {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	
+
 	if !obj.strategy.CrawlNeeded(id) {
 		return
 	}
@@ -22,7 +22,7 @@ func (obj *TemplateJson) Crawl(id string) (err error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
-	}	
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -34,5 +34,5 @@ func (obj *TemplateJson) Crawl(id string) (err error) {
 	}
 
 	err = obj.strategy.Process(json)
-	return	
+	return
 }

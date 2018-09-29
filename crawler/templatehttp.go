@@ -2,9 +2,9 @@ package crawler
 
 import (
 	"bytes"
-	"net/http"
-	"io/ioutil"
 	"github.com/PuerkitoBio/goquery"
+	"io/ioutil"
+	"net/http"
 )
 
 type TemplateHttp struct {
@@ -22,7 +22,7 @@ func (obj *TemplateHttp) Crawl(id string) (err error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
-	}	
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -35,6 +35,5 @@ func (obj *TemplateHttp) Crawl(id string) (err error) {
 	}
 
 	err = obj.strategy.Process(doc)
-	return	
+	return
 }
-
